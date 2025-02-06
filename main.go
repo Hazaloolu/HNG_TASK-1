@@ -7,7 +7,9 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -85,7 +87,7 @@ func getFunFact(number int) string {
 func classifyNumber(c *gin.Context) {
 	numberStr := c.Query("number")
 
-	// Validate input
+	// Validate number input
 	number, err := strconv.Atoi(numberStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -126,9 +128,19 @@ func classifyNumber(c *gin.Context) {
 
 func main() {
 	r := gin.Default()
+
+	// Configure CORS
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // Allow all origins
+		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	r.GET("/api/classify-number", classifyNumber)
 
-	// Start the server
+	// Start server
 	port := "8080"
 	fmt.Println("Server running on port", port)
 	if err := r.Run(":" + port); err != nil {
